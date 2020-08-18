@@ -50,19 +50,17 @@
                     <button id="search" class="btn btn-success search-btn">Search</button>
                 </div>
             </div>
-            
-            <div class="single-lyrics text-center">
-                <button class="btn go-back">&lsaquo;</button>
-                <h2 class="text-success mb-4">Pentatonix - Na Na Na</h2>
-                <pre class="lyric text-white">
-                    Gonna feel like! (Na na na...)
-                </pre>
-            </div>
             <!-- === Fancy results === -->
             <div id="search-result" class="search-result col-md-8 mx-auto py-4">
             </div>
 
-
+            <div class="single-lyrics text-center">
+                <button class="btn go-back">&lsaquo;</button>
+                <h2 id="songTitle" class="text-success mb-4"></h2>
+                <pre id="lyrics" class="lyric text-white">
+                    
+                </pre>
+            </div>
 
         </main>
     </div>
@@ -78,43 +76,45 @@
         const searchedSong = document.getElementById("searched-song");
         const search = document.getElementById("search");
         search.addEventListener("click",function(){
+
             const getSearchedSong = searchedSong.value.trim();
             fetch(`${api}/suggest/${getSearchedSong}`)
             .then(res => res.json())
             .then(data => {
-                
+                document.getElementById("lyrics").innerHTML = "";
+                document.getElementById("songTitle").innerHTML = "";
                 const searchResult = document.getElementById("search-result");
                 searchResult.innerHTML = "";
                 for (let i = 0; i < 10; i++) {
                     const song = data.data[i].title;
                     const artist = data.data[i].artist.name;
                     const child = `<div class="single-result row align-items-center my-3 p-3">
-                    <div class="col-md-9">
-                        <h3 class="lyrics-name">${song}</h3>
-                        <p class="author lead">Album by <span>${artist}</span></p>
-                    </div>
-                    <div class="col-md-3 text-md-right text-center">
-                        <button id="get-lyrics" class="btn btn-success">Get Lyrics</button>
-                    </div>
-                </div>`;
-                searchResult.innerHTML += child;
-                document.getElementById("get-lyrics").addEventListener("click",function(){
-                    getLyrics(song,artist);
-                    console.log(song);
-                    console.log(artist);
-                })
-                function getLyrics(songName,artistName){
-                    fetch(`https://api.lyrics.ovh/v1/${artistName}/${songName}`)
-                    .then(res => res.json())
-                    .then(data => {
-                        console.log(data.lyrics);
-                    })
+						<div class="col-md-9">
+							<h3 class="lyrics-name">${song}</h3>
+							<p class="author lead">Album by <span>${artist}</span></p>
+						</div>
+						<div class="col-md-3 text-md-right text-center">
+							<button class="btn btn-success" data-song="${song}" data-artist="${artist}" onclick="getLyrics(this)">Get Lyrics</button>
+						</div>
+					</div>`;
+					searchResult.innerHTML += child;
                 }
-                    
-                }
+				
 
             })
         })
+		
+		function getLyrics(elem){
+		    let songName = elem.getAttribute('data-song');
+		    let artistName = elem.getAttribute('data-artist');
+			
+			fetch(`https://api.lyrics.ovh/v1/${artistName}/${songName}`)
+			.then(res => res.json())
+			.then(data => {
+                document.getElementById("lyrics").innerHTML = data.lyrics;document.getElementById("songTitle").innerHTML = `${songName} - ${artistName}`;
+                
+			})
+		}
     </script>
 
 </body>
